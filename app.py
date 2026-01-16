@@ -5,17 +5,30 @@ import matplotlib.pyplot as plt # 차트를 더 이쁘게 그려주는 라이브
 import seaborn as sns # 차트를 더 이쁘게 그려주는 라이브러리
 import numpy as np # 수학적 계산을 도와주는 라이브러리
 import platform # 운영체제 확인 라이브러리
+import os # 운영체제 관련 라이브러리
+import matplotlib.font_manager as fm # 폰트 관리를 위한 라이브러리 추가
 
 # -----------------------------------------------------------------------------------
-# 한글 폰트 설정 (그래프에서 한글이 깨지지 않도록 설정)
+# 한글 폰트 설정 (수정된 버전)
 # -----------------------------------------------------------------------------------
 system_name = platform.system()
+
 if system_name == 'Windows':
     plt.rc('font', family='Malgun Gothic') # 윈도우
 elif system_name == 'Darwin':
     plt.rc('font', family='AppleGothic') # 맥
 else:
-    plt.rc('font', family='NanumGothic') # 리눅스(코랩 등)
+    # 리눅스 (Streamlit Cloud 등)
+    # 1단계에서 설치한 나눔 폰트의 경로를 직접 지정
+    font_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+    
+    # 폰트 파일이 실제로 있는지 확인 후 설정
+    if os.path.exists(font_path):
+        font_prop = fm.FontProperties(fname=font_path)
+        plt.rc('font', family=font_prop.get_name())
+    else:
+        # 혹시 폰트 경로가 다르다면 기본 폰트 설정 (깨질 확률 있음)
+        plt.rc('font', family='NanumGothic')
 
 plt.rc('axes', unicode_minus=False) # 마이너스 기호 깨짐 방지
 
