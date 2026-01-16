@@ -49,23 +49,55 @@ file_path = '국세청_근로소득 백분위(천분위) 자료_20241231.csv' # 
 # file_path = './data(폴더명)/국세청_근로소득 백분위(천분위) 자료_20241231.csv' # 폴더로 관리할 때 './폴더명/파일명.csv' 로 관리
 # file_path = '../국세청_근로소득 백분위(천분위) 자료_20241231.csv' # 하위 폴더에서 상위 폴더의 데이터 관리할 때 '../파일명.csv' 로 관리
 
+def load_data(path):
+    encodings = ['utf-8-sig', 'cp949', 'euc-kr', 'utf-8']
+    for enc in encodings:
+        try:
+            df = pd.read_csv(path, encoding=enc, thousands=',')
+            df.columns = df.columns.str.strip() # 컬럼명 공백 제거
+            return df, enc
+        except (UnicodeDecodeError, FileNotFoundError):
+            continue
+    return None, None
 
 # 혹시모를 오류에 대한 대비
 try : 
-    # 자료 읽기
-    df = pd.read_csv(file_path, encoding='euc-kr') # 한글 깨짐 방지 인코딩, file_path를 csv로 판다스에서 읽기
-    st.success('데이터가 성공적으로 불러와졌습니다!') # 데이서 읽어오는 것 성공했을 때.
+    # # 자료 읽기
+    # df = pd.read_csv(file_path, encoding='euc-kr') # 한글 깨짐 방지 인코딩, file_path를 csv로 판다스에서 읽기
+    # st.success('데이터가 성공적으로 불러와졌습니다!') # 데이서 읽어오는 것 성공했을 때.
 
-    # 데이터 미리보기
-    st.subheader('📈데이터 미리보기') # 서브 타이틀
-    st.dataframe(df.head(10)) # 데이터프레임의 앞에서 10개 행 미리보기, 디폴트는 5개 행
+    # # 데이터 미리보기
+    # st.subheader('📈데이터 미리보기') # 서브 타이틀
+    # st.dataframe(df.head(10)) # 데이터프레임의 앞에서 10개 행 미리보기, 디폴트는 5개 행
 
-    # 데이터 분석 그래프 그리기
-    st.subheader('📈항목별 분포 그래프') # 서브 타이틀
-    #분석하고 싶으 열 이름을 선택하도록 할게요
-    # 급여나 인원 같은 숫자 데이터가 있는 칸을 고를 수 있도록 함.
-    col_names = df.columns.tolist() # 데이터프레임의 열 이름들을 리스트로 변환
-    selected_col = st.selectbox('분포를 보고 싶은 항목을 선택하세요', col_names) # 첫 번째 열(백분위)은 제외하고 선택박스 생성
+    # # 데이터 분석 그래프 그리기
+    # st.subheader('📈항목별 분포 그래프') # 서브 타이틀
+    # #분석하고 싶으 열 이름을 선택하도록 할게요
+    # # 급여나 인원 같은 숫자 데이터가 있는 칸을 고를 수 있도록 함.
+    # col_names = df.columns.tolist() # 데이터프레임의 열 이름들을 리스트로 변환
+    # selected_col = st.selectbox('분포를 보고 싶은 항목을 선택하세요', col_names) # 첫 번째 열(백분위)은 제외하고 선택박스 생성
+
+    df, used_encoding = load_data(file_path)
+
+    if df is not None:
+        st.success(f"✅ 데이터를 성공적으로 불러왔습니다! (인코딩: {used_encoding})")
+
+        # 상단 요약 정보
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("📊 데이터 요약")
+            st.dataframe(df.head(10))
+        with col2:
+            st.subheader("📋 기초 통계")
+            st.write(df.describe())
+
+        # 시각화 섹션
+        st.divider()
+        numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns.tolist()
+
+        if numeric_cols:
+            st.subheader("📈 데이터 분포 시각화")
+            selected_col = st.selectbox("분석할 항목을 선택하세요:", options=numeric_cols)
 
     # 그래프 그리기(seaborn 활용)
     fig, ax = plt.subplots(figsize=(10, 5)) # figsize -> 차트의 가로 세로 비율. fig = 전체 도화지, ax = 그래프가 그려질 영역
