@@ -1,34 +1,41 @@
 # 배포를 할 때 가장 첫 번째로 실행되는 파일! 이름은 내가 원하는 대로 지어도 상관없음.
+import os # 운영체제 관련 라이브러리
+import matplotlib.font_manager as fm # 폰트 관리를 위한 라이브러리 추가
 import streamlit as st
 import pandas as pd # 그래프 그려주는 라이브러리
 import matplotlib.pyplot as plt # 차트를 더 이쁘게 그려주는 라이브러리
 import seaborn as sns # 차트를 더 이쁘게 그려주는 라이브러리
 import numpy as np # 수학적 계산을 도와주는 라이브러리
 import platform # 운영체제 확인 라이브러리
-import os # 운영체제 관련 라이브러리
-import matplotlib.font_manager as fm # 폰트 관리를 위한 라이브러리 추가
+
 
 # -----------------------------------------------------------------------------------
-# 한글 폰트 설정 (수정된 버전)
+# 한글 폰트 설정 (더 강력한 버전)
 # -----------------------------------------------------------------------------------
 system_name = platform.system()
 
 if system_name == 'Windows':
-    plt.rc('font', family='Malgun Gothic') # 윈도우
+    # 윈도우
+    plt.rc('font', family='Malgun Gothic') 
 elif system_name == 'Darwin':
-    plt.rc('font', family='AppleGothic') # 맥
+    # 맥
+    plt.rc('font', family='AppleGothic') 
 else:
-    # 리눅스 (Streamlit Cloud 등)
-    # 1단계에서 설치한 나눔 폰트의 경로를 직접 지정
-    font_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+    # 리눅스 (Streamlit Cloud)
+    # 폰트 파일 경로 지정
+    path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
     
-    # 폰트 파일이 실제로 있는지 확인 후 설정
-    if os.path.exists(font_path):
-        font_prop = fm.FontProperties(fname=font_path)
-        plt.rc('font', family=font_prop.get_name())
+    # 해당 경로에 폰트 파일이 있는지 확인
+    if os.path.exists(path):
+        # 1. 폰트 매니저에 폰트 추가 (이게 핵심!)
+        fm.fontManager.addfont(path)
+        
+        # 2. 추가된 폰트의 이름을 가져와서 설정
+        font_name = fm.FontProperties(fname=path).get_name()
+        plt.rc('font', family=font_name)
     else:
-        # 혹시 폰트 경로가 다르다면 기본 폰트 설정 (깨질 확률 있음)
-        plt.rc('font', family='NanumGothic')
+        # 폰트가 설치되지 않았을 경우 에러 메시지 출력 (디버깅용)
+        st.error("⚠️ 한글 폰트 파일이 없습니다. packages.txt를 확인해주세요.")
 
 plt.rc('axes', unicode_minus=False) # 마이너스 기호 깨짐 방지
 
